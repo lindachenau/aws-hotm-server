@@ -1,0 +1,13 @@
+{
+  "name": "hotm_server",
+  "version": "1.0.0",
+  "description": "HOTM charge & email verification server",
+  "author": "Linda Chen",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "google-libphonenumber": "^3.2.8",
+    "nodemailer": "^6.4.3",
+    "stripe": "^8.4.0"
+  }
+}
