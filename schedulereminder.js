@@ -2,14 +2,11 @@ const AWS = require('aws-sdk')
 
 AWS.config.update({region: 'ap-southeast-2'})
 
-const LAMBDA_ROLE = 'arn:aws:iam::862360068538:role/aws-hotm-server-dev-ap-southeast-2-lambdaRole'
-const LAMBDA_ARN = 'arn:aws:lambda:ap-southeast-2:862360068538:function:aws-hotm-server-dev-sendreminder'
-
 const cwevents = new AWS.CloudWatchEvents()
 const lambda = new AWS.Lambda()
 
 const createEvent = (bookingType, bookingId, bookingDate) => {
-  const bDate = new Date((new Date(bookingDate)).getTime() - process.env.REMINDER_HOURS_BEFORE * 3600000)
+  const bDate = new Date((new Date(bookingDate)).getTime() - parseInt(process.env.REMINDER_HOURS_BEFORE) * 3600000)
 
   if (bDate.getTime() < (new Date()).getTime()) //The appointment is less than REMINDER_HOURS_BEFORE_APPOINTMENT hours away. No need to send reminder.
     return Promise.reject({
@@ -23,7 +20,7 @@ const createEvent = (bookingType, bookingId, bookingDate) => {
   const id = `${bookingType}-${bookingId}-reminder`
   const params = {
     Name: id,
-    RoleArn: LAMBDA_ROLE,
+    RoleArn: process.env.LAMBDA_ROLE,
     ScheduleExpression: `cron(${min} ${hour} ${date} ${month} ? *)`,
     State: 'ENABLED'
   }
@@ -44,7 +41,7 @@ const eventTarget = (id, localDate, name, phoneNumber) => {
     Rule: id,
     Targets: [
       {
-        Arn: LAMBDA_ARN,
+        Arn: process.env.SMS_LAMBDA_ARN,
         Id: id,
         Input: JSON.stringify({
           "targetId": id,
@@ -71,7 +68,7 @@ const eventTarget = (id, localDate, name, phoneNumber) => {
 const lambdaTrigger = (ruleArn, id) => {
   const params = {
     Action: "lambda:InvokeFunction", 
-    FunctionName: "aws-hotm-server-dev-sendreminder", 
+    FunctionName: process.env.SMS_LAMBDA, 
     Principal: "events.amazonaws.com", 
     SourceArn: ruleArn, 
     StatementId: id

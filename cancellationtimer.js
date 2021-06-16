@@ -2,19 +2,16 @@ const AWS = require('aws-sdk')
 
 AWS.config.update({region: 'ap-southeast-2'})
 
-const LAMBDA_ROLE = 'arn:aws:iam::862360068538:role/aws-hotm-server-dev-ap-southeast-2-lambdaRole'
-const LAMBDA_ARN = 'arn:aws:lambda:ap-southeast-2:862360068538:function:aws-hotm-server-dev-cancelbooking'
-
 const cwevents = new AWS.CloudWatchEvents()
 const lambda = new AWS.Lambda()
 
 const createEvent = (bookingType, bookingId) => {
-  const cDate = new Date(new Date().getTime() + 3600000 * process.env.AUTO_CANCEL_HOURS_AFTER_BOOKING)
+  const cDate = new Date(new Date().getTime() + 3600000 * parseInt(process.env.AUTO_CANCEL_HOURS_AFTER_BOOKING))
   const minute = cDate.getMinutes()
   const hour = cDate.getHours()
   const params = {
     Name: `${bookingType}-${bookingId}-cancellation`,
-    RoleArn: LAMBDA_ROLE,
+    RoleArn: process.env.LAMBDA_ROLE,
     ScheduleExpression: `cron(${minute} ${hour} * * ? *)`, //Trigger 12 hours later from now
     State: 'ENABLED'
   }
@@ -36,7 +33,7 @@ const eventTarget = (bookingType, bookingId) => {
     Rule: id,
     Targets: [
       {
-        Arn: LAMBDA_ARN,
+        Arn: process.env.CANCELBOOKING_LAMBDA_ARN,
         Id: id,
         Input: JSON.stringify({
           "targetId": id,
@@ -62,7 +59,7 @@ const eventTarget = (bookingType, bookingId) => {
 const lambdaTrigger = (ruleArn, bookingType, bookingId) => {
   const params = {
     Action: "lambda:InvokeFunction", 
-    FunctionName: "aws-hotm-server-dev-cancelbooking", 
+    FunctionName: process.env.CANCELBOOKING_LAMBDA, 
     Principal: "events.amazonaws.com", 
     SourceArn: ruleArn, 
     StatementId: `${bookingType}-${bookingId}-cancellation`

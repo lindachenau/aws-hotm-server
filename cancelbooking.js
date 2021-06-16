@@ -43,7 +43,7 @@ const deleteRule = (rule) => {
 
 const removeTrigger = (targetId) => {
   const params = {
-    FunctionName: "aws-hotm-server-dev-cancelbooking", 
+    FunctionName: process.env.CANCELBOOKING_LAMBDA, 
     StatementId: targetId
   }
   

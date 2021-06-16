@@ -45,7 +45,7 @@ const deleteRule = (rule) => {
 
 const removeTrigger = (targetId) => {
   const params = {
-    FunctionName: "aws-hotm-server-dev-sendreminder", 
+    FunctionName: process.env.SMS_LAMBDA, 
     StatementId: targetId
   }
   
@@ -72,19 +72,20 @@ module.exports.handler = (event, context, callback) => {
   }
 
   // Create promise and SNS service object
-  // const publishTextPromise = sns.publish(params).promise()
+  const publishTextPromise = sns.publish(params).promise()
 
-  const publishTextPromise = new Promise((resolve, reject) => {
-    resolve({targetId, message})
-  })
+  // Dummy for not sending SMS
+  // const publishTextPromise = new Promise((resolve, reject) => {
+  //   resolve({targetId, message})
+  // })
 
   // Handle promise's fulfilled/rejected states
   publishTextPromise.then((data) => {
-    console.log(intPhoneNum)
-    console.log(data.targetId)
-    console.log(data.message)    
-    // console.log("MessageID is " + data.MessageId)
-    // callback(null, {messageId: data.MessageId})
+    // console.log(intPhoneNum)
+    // console.log(data.targetId)
+    // console.log(data.message)    
+    console.log("MessageID is " + data.MessageId)
+    callback(null, {messageId: data.MessageId})
   }).then(() => {
     return removeTrigger(targetId)
   }).then(() => {

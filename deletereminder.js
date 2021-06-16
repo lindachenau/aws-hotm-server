@@ -42,7 +42,7 @@ const deleteRule = (rule) => {
 
 const removeTrigger = (targetId) => {
   const params = {
-    FunctionName: "aws-hotm-server-dev-sendreminder", 
+    FunctionName: process.env.SMS_LAMBDA, 
     StatementId: targetId
   }
   
